@@ -7,7 +7,7 @@ Homebrew formulae for Sendmux developer tools.
 Install the Sendmux CLI:
 
 ```sh
-brew install sendmux/tap/sendmux
+brew install qubrics/tap/sendmux
 ```
 
 Check the installed command:
@@ -37,7 +37,7 @@ Update `Formula/sendmux.rb` from the SDK release workflow after `@sendmux/cli` p
 Local verification:
 
 ```sh
-brew audit --strict --new --online sendmux/tap/sendmux
-brew install --build-from-source sendmux/tap/sendmux
-brew test sendmux/tap/sendmux
+brew audit --strict --new --online qubrics/tap/sendmux
+brew install --build-from-source qubrics/tap/sendmux
+brew test qubrics/tap/sendmux
 ```
