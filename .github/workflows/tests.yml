@@ -19,6 +19,9 @@ jobs:
       - name: Tap local repository
         run: brew tap qubrics/tap "$GITHUB_WORKSPACE"
 
+      - name: Trust formula under test
+        run: brew trust --formula qubrics/tap/sendmux
+
       - name: Audit formula
         run: brew audit --strict --new --online qubrics/tap/sendmux
 
