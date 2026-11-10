@@ -1,6 +1,7 @@
 name: Tests
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -20,13 +21,21 @@ jobs:
         run: brew tap qubrics/tap "$GITHUB_WORKSPACE"
 
       - name: Trust formula under test
-        run: brew trust --formula qubrics/tap/sendmux
+        run: brew trust --formula qubrics/tap/qubrics
 
       - name: Audit formula
-        run: brew audit --strict --new --online qubrics/tap/sendmux
+        run: brew audit --strict qubrics/tap/qubrics
+
+      - name: Check formula style
+        run: brew style qubrics/tap/qubrics
 
       - name: Install formula
-        run: HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source qubrics/tap/sendmux
+        run: HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source qubrics/tap/qubrics
 
       - name: Test formula
-        run: brew test qubrics/tap/sendmux
+        run: brew test qubrics/tap/qubrics
+
+      - name: Read installed versions
+        run: |
+          qubrics --version
+          sendmux --version
