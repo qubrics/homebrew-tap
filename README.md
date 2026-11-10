@@ -29,6 +29,17 @@ The `sendmux` formula name is a deprecated alias of `qubrics`. To migrate an exi
 ```sh
 brew update
 brew trust --formula qubrics/tap/qubrics
+```
+
+If the existing install came from the former `sendmux/tap`, migrate its tap identity:
+
+```sh
+brew migrate --force qubrics/tap/qubrics
+```
+
+Then upgrade:
+
+```sh
 brew upgrade sendmux
 qubrics --version
 ```
