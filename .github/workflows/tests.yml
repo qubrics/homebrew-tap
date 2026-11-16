@@ -30,7 +30,7 @@ jobs:
         run: brew style qubrics/tap/qubrics
 
       - name: Install formula
-        run: HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source qubrics/tap/qubrics
+        run: brew install --build-from-source qubrics/tap/qubrics
 
       - name: Test formula
         run: brew test qubrics/tap/qubrics

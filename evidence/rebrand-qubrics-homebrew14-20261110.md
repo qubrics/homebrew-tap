@@ -1,6 +1,6 @@
 # Homebrew rename preparation (#14)
 
-Status: prepared, not published. No acceptance box is closed by this receipt.
+Status: PR17 published on 17 November 2026 under operator 1B and standing 7A. Earlier sections retain preparation history; current live results appear below.
 
 ## Candidate and compatibility
 
@@ -89,3 +89,50 @@ The packet also states `Online audit, published fresh install and existing-insta
 Ops disposition at 22:57 AEDT: keep PR17 held. The cutover verification window is 17 November 17:00–20:15 AEDT and is still awaiting approval. Once it is approved and open, recheck PR17 head and CI, then merge only the approved `cfb50dcf7dc36c4466e84701f4b6baf33f1b92cb` under standing 7A. No further Ops ping until the window.
 
 Exact publication remains separate Sendmux 1.7.1 → old-name pointer to Qubrics 2.0.0, using unchanged `@qubrics/cli@2.0.0` and SHA256 above. Rollback remains a normal revert restoring base `c9ebc138487f85c590a63edd570a803d82c8968b`; already migrated consumers are not automatically downgraded. No merge or publication from this evidence branch.
+
+## Approved publication and live upgrade — 17 November 2026
+
+Operator 1B opened the joint cutover window immediately at 10:41 AEDT instead of 17:00 (Ops `decisions.md:540`). Ops explicitly directed this session to merge PR17 under 7A, confirm the tap run and read the installed formula. Every publication condition was checked before merging:
+
+| 7A condition | Live result |
+| --- | --- |
+| Exact candidate | PR17 OPEN/CLEAN at `cfb50dcf7dc36c4466e84701f4b6baf33f1b92cb`, base `c9ebc138487f85c590a63edd570a803d82c8968b`; clean local candidate. |
+| Current-head CI green | `test` SUCCESS on [42802197904 attempt 2](https://github.com/qubrics/homebrew-tap/actions/runs/42802197904/attempts/2). No review threads or legacy status contexts; CodeRabbit SKIPPED by existing policy. |
+| After 11 November 10:16:31 AEDT | Host clock 17 November 10:43 AEDT. |
+| Docs live | Both `curl --fail --location` checks exited 0: `200 https://qubrics.com/docs` and `200 https://qubrics.com/`. |
+| Exact-version GO | Standing 7A for the unchanged CLI 2.0.0 tarball and rename, explicitly reconfirmed by Ops in the open window. |
+| Separately approved cutover verification window opens | Operator 1B explicitly opened it now; prior HOLD superseded. |
+
+`gh pr merge 17 --repo qubrics/homebrew-tap --merge --match-head-commit cfb50dcf7dc36c4466e84701f4b6baf33f1b92cb` exited 0. Independent API readback: [PR17](https://github.com/qubrics/homebrew-tap/pull/17) MERGED at `2026-11-16T23:44:23Z` (17 November 10:44:23 AEDT), [merge 5b46a0253071d0e864978cda91609b5584db2046](https://github.com/qubrics/homebrew-tap/commit/5b46a0253071d0e864978cda91609b5584db2046). This is the live formula publication; no npm publication occurred.
+
+Consumer commands below ran against that published tap, with `HOMEBREW_NO_AUTO_UPDATE=1` after the explicit refresh. No cooldown, audit or trust check was disabled.
+
+| Command/readback | Measured result |
+| --- | --- |
+| Before changes: `brew list --versions sendmux qubrics` | `sendmux 1.3.1`; no Qubrics installed (exit 1 because one requested formula was absent). Original receipt `source.tap=sendmux/tap`, stable `1.3.1`. |
+| `brew update` | Exit 0; consumer tap HEAD became `5b46a0253071d0e864978cda91609b5584db2046`. Homebrew itself updated 7.0.13 → 7.0.14. It reported the known old-name receipt tap mismatch during automatic migration. |
+| `brew trust --formula qubrics/tap/qubrics` | Exit 0, already trusted. |
+| `brew migrate --force qubrics/tap/qubrics` | Exit 0: migrated `sendmux` to `qubrics`, unlinked old name, moved existing 1.3.1 keg, relinked. No uninstall or hand-edited receipt. |
+| `brew audit --strict --new --online qubrics/tap/qubrics` | Exit 0 against published tap and Homebrew 7.0.14. |
+| `brew upgrade sendmux` | Exit 0: `qubrics/tap/qubrics 1.3.1 -> 2.0.0`, one requested package upgraded; npm installation and tarball verification succeeded. Homebrew installed/upgraded required Node dependencies. |
+| `brew list --versions qubrics` | Exit 0: `qubrics 2.0.0`. |
+| `qubrics --version` | Exit 0: `@qubrics/cli/2.0.0 darwin-arm64 node-v26.13.1`. |
+| `sendmux --version` | Exit 0: exactly one `sendmux is deprecated. Use qubrics instead.` line, then `@qubrics/cli/2.0.0 darwin-arm64 node-v26.13.1`. |
+| `brew test qubrics/tap/qubrics` | Exit 0; ran installed version and help tests. |
+| Installed receipt | `source.tap=qubrics/tap`, `tap_git_head=5b46a0253071d0e864978cda91609b5584db2046`, stable `2.0.0`. |
+| `brew info --json=v2 qubrics/tap/sendmux` | Exit 0: `name=qubrics`, `full_name=qubrics/tap/qubrics`, `oldnames=[sendmux]`, stable/installed `2.0.0`. Canonical replacement is not deprecated; legacy command emits the warning. |
+| Public npm readback | `@qubrics/cli@2.0.0`, both binaries, unchanged `https://registry.npmjs.org/@qubrics/cli/-/cli-2.0.0.tgz`. |
+
+The refresh messages all came from the already-diagnosed legacy receipt source. `/opt/homebrew/Library/Homebrew/migrator.rb:163` rejects a different tap unless its documented migration command is used. The vendor migrator moved the actual existing keg; the subsequent upgrade wrote a canonical `qubrics/tap` receipt. Successful upgrade and old-name lookup confirm the cause is removed. No retry, relief or manual receipt edit was used as a fix.
+
+Fresh-install/main CI: [43981862392](https://github.com/qubrics/homebrew-tap/actions/runs/43981862392), automatically triggered by the publication push on exact merge `5b46a025`, **FAILED** after installing CLI 2.0.0 successfully. Audit/style/install passed; formula test stopped before executing its assertions; both-version readback was skipped. No rerun was issued. No full CI or final acceptance is claimed from this run.
+
+Candidate reopened: main CI is red, blocking the explicit tap-CI acceptance clause. Exact failing line (`publish-ci-20261117.log:366`): `qubrics/tap/qubrics has outdated test dependencies: simdutf ada-url libffi llhttp merve node`. Lines 322–349 show those same six dependencies freshly installed at versions selected by the newly cloned core Git tap. This rules out a missing dependency or an installation that silently skipped an old dependency.
+
+Origin: `.github/workflows/tests.yml` forced `HOMEBREW_NO_INSTALL_FROM_API=1` for installation alone, then ran the test without it. Homebrew's `docs/Manpage.md:5066` says that override selects local Git metadata for **core/cask**, not third-party taps. `dependency.rb:115` requires the metadata source's latest installed version; `dev-cmd/test.rb:77` rejects mismatches as outdated before running the formula test. The fresh runner's cached API metadata and newly cloned Git metadata disagree. Local API/Git inventories agree after `brew update`, explaining why local upgrade and test pass. The failure is metadata-source inconsistency, not the CLI, release-age gate or homepage.
+
+Minimal origin fix: remove only the install command's API override. Install and test now both use Homebrew's default API metadata for core dependencies; the fully qualified `qubrics/tap/qubrics` still reads the checked-out third-party tap. Keep the strict audit, formula test, source install and both version assertions unchanged. No dependency pin, forced upgrade list, test suppression or retry is the fix. Existing CI is the regression test: the original run is red; the changed workflow must pass on a new commit before acceptance.
+
+Raw receipts retained in the MAIN artifact directory above for the open #901/#902 cutover: `brew-update-20261117.log`, `brew-migrate-20261117.log`, `audit-online-20261117.log`, `brew-upgrade-20261117.log`, `installed-version-20261117.txt`, `qubrics-version-20261117.txt`, `sendmux-version-20261117.txt`, `old-name-info-20261117.json`, `brew-test-20261117.log`, `publish-watch-20261117.log`, `publish-ci-20261117.log`, `publish-failed-20261117.log`.
+
+Rollback remains a normal revert of merge `5b46a0253071d0e864978cda91609b5584db2046` (`git revert -m 1 5b46a0253071d0e864978cda91609b5584db2046`) through a reviewed rollback PR, restoring published source to `c9ebc138487f85c590a63edd570a803d82c8968b`. It does not downgrade already migrated consumers; no downgrade is authorised.
