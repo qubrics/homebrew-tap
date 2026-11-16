@@ -61,3 +61,31 @@ Proposed publication: replace the separate `sendmux` formula 1.7.1 with an alias
 Merge publishes this rename to every consumer pulling main. Keep the PR unmerged until Ops approves this exact transition. Rollback is a normal revert restoring base `c9ebc138487f85c590a63edd570a803d82c8968b`: separate Sendmux 1.7.1 and Qubrics 2.0.0 formulae, previous workflow and README. It does not automatically downgrade users already migrated to 2.0.0 or undo commands they ran. No consumer downgrade is claimed or authorised here.
 
 Parked: existing unrelated PR12 (`homebrew/sendmux-v1.7.2`) is untouched. It is not approved for merge by this task.
+
+## Read-only activation checks — 16 November 2026
+
+Measured 22:48–22:52 AEDT, after Ops reported #901 P6 live. PR17 remains OPEN/CLEAN at approved `cfb50dcf7dc36c4466e84701f4b6baf33f1b92cb`; base remains `c9ebc138487f85c590a63edd570a803d82c8968b`. This evidence addition uses the separate task branch `agent/rebrand-qubrics-homebrew14-evidence` so the approved PR head stays unchanged. No tap publication, package installation, receipt migration or upgrade was performed.
+
+- Step 1: `curl --fail --location --silent --show-error --max-time 30 --output /dev/null --write-out '%{http_code}\n' https://qubrics.com/docs` exited 0 and returned `200`. The same apex check returned `200`.
+- Step 6: `HOMEBREW_NO_AUTO_UPDATE=1 brew audit --strict --new --online qubrics/tap/qubrics` exited 0. Only the existing vendor `rubocop-md` obsolete-option warning was emitted; no formula offence or audit exception was suppressed.
+- Audit input: PR17's `Formula/qubrics.rb` is byte-identical to the installed canonical tap's file (`cmp -s` exited 0). The formula is unchanged by PR17. Named audit therefore checks the approved formula bytes; PR17's rename metadata was separately qualified by its green current-head CI. Installed tap sources remain at the published base; no checkout was changed for this check.
+- Initial invocation correction: Homebrew rejected the absolute file argument before auditing. Its `/opt/homebrew/Library/Homebrew/dev-cmd/audit.rb:168` explicitly disables `brew audit [path ...]` and requires names. The supported named command above fixed the invocation at its origin; all requested audit flags were retained.
+
+Raw receipts under `/Users/rj/Desktop/GIT-REPOS/homebrew-tap/.claude/artifacts/rebrand-qubrics-homebrew14/`: `gate-20261116-docs-status.txt`, `gate-20261116-docs-headers.txt`, `gate-20261116-homepage-status.txt`, `gate-20261116-homepage-headers.txt`, `audit-online-20261116.log` and `audit-path-rejected-20261116.log`.
+
+The 11 November 7A decision at Ops `decisions.md:403` says `7A homebrew14 conditional GO (tap PR17 after cooldown 10:16, conditions per ask)`. The exact publication packet's conditions evaluate as follows:
+
+| Verbatim condition | Measured result |
+| --- | --- |
+| `at candidate cfb50dcf7dc36c4466e84701f4b6baf33f1b92cb` | PASS: local HEAD and live PR17 head both match; no merge yet. |
+| `after 11 November 2026 10:16:31 AEDT` | PASS: host date is 16 November 2026, 22:48 AEDT. |
+| `after https://qubrics.com/docs is live` | PASS: docs and apex HTTP 200, both curl commands exited 0. |
+| `current-head required CI passes` / `current-head CI green` | PASS: live PR17 check `test` is SUCCESS for the approved head, [run42802197904 attempt 2](https://github.com/qubrics/homebrew-tap/actions/runs/42802197904/attempts/2). CodeRabbit remains SKIPPED under its existing policy; it is not reported as a passed check. |
+| `exact-version publication GO` | Standing conditional 7A applies to the exact transition below; it does not remove the separate window condition. |
+| `and the separately approved cutover verification window opens` | ASK: this condition names cutover. Per Ops' 16 November instruction, do not infer merge authority from the website's HTTP 200; hold and quote the condition. |
+
+The packet also states `Online audit, published fresh install and existing-install upgrade/version proof remain #901 cutover steps before D21 closure.` Ops explicitly authorised the read-only audit now. Published fresh install and existing-install migration/upgrade remain unexecuted; no acceptance box is closed from these checks alone.
+
+Ops disposition at 22:57 AEDT: keep PR17 held. The cutover verification window is 17 November 17:00–20:15 AEDT and is still awaiting approval. Once it is approved and open, recheck PR17 head and CI, then merge only the approved `cfb50dcf7dc36c4466e84701f4b6baf33f1b92cb` under standing 7A. No further Ops ping until the window.
+
+Exact publication remains separate Sendmux 1.7.1 → old-name pointer to Qubrics 2.0.0, using unchanged `@qubrics/cli@2.0.0` and SHA256 above. Rollback remains a normal revert restoring base `c9ebc138487f85c590a63edd570a803d82c8968b`; already migrated consumers are not automatically downgraded. No merge or publication from this evidence branch.
