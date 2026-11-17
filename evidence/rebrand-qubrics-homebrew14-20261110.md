@@ -1,6 +1,6 @@
 # Homebrew rename preparation (#14)
 
-Status: PR17 published on 17 November 2026 under operator 1B and standing 7A. Earlier sections retain preparation history; current live results appear below.
+Status: all four #14 acceptance criteria measured on the live tap, 17 November 2026. PR17 published under operator 1B/7A; PR18 repaired CI at its origin. Earlier sections retain preparation history; final results appear below.
 
 ## Candidate and compatibility
 
@@ -142,3 +142,26 @@ Task source tarball cache and download were deleted after the local build; both 
 Raw receipts retained in the MAIN artifact directory above for the open #901/#902 cutover: `brew-update-20261117.log`, `brew-migrate-20261117.log`, `audit-online-20261117.log`, `brew-upgrade-20261117.log`, `installed-version-20261117.txt`, `qubrics-version-20261117.txt`, `sendmux-version-20261117.txt`, `old-name-info-20261117.json`, `brew-test-20261117.log`, `publish-watch-20261117.log`, `publish-ci-20261117.log`, `publish-failed-20261117.log`.
 
 Rollback remains a normal revert of merge `5b46a0253071d0e864978cda91609b5584db2046` (`git revert -m 1 5b46a0253071d0e864978cda91609b5584db2046`) through a reviewed rollback PR, restoring published source to `c9ebc138487f85c590a63edd570a803d82c8968b`. It does not downgrade already migrated consumers; no downgrade is authorised.
+
+## Final live acceptance
+
+[PR18](https://github.com/qubrics/homebrew-tap/pull/18) merged exact reviewed/green head `6268d0d545b5fd1509f8d28db21c2fc97a7d0af1` as [86a3d9fcbe759df3c51fcb535a5ac22c05fac252](https://github.com/qubrics/homebrew-tap/commit/86a3d9fcbe759df3c51fcb535a5ac22c05fac252) at `2026-11-17T00:02:41Z` (11:02:41 AEDT). Three-minute final review sweep at 11:02 AEDT: no outstanding comments, reviews, threads or status contexts; existing CodeRabbit policy SKIPPED, not reported as passed. Independent review: one shared evidence-wording finding fixed, no functional findings. This in-scope repair changed only workflow/evidence, satisfying Ops' earlier non-publishing merge condition. `git diff --exit-code 5b46a025 HEAD -- Formula formula_renames.json README.md` exited 0 before merge: no additional formula, name or version publication.
+
+[Final main CI43984371201](https://github.com/qubrics/homebrew-tap/actions/runs/43984371201) ran on exact published `86a3d9fcbe759df3c51fcb535a5ac22c05fac252`: **SUCCESS**, all steps succeeded, `gh run watch --exit-status` exited 0. Fresh runner installed `qubrics/tap/qubrics` 2.0.0, passed installed version/help tests, and printed both CLI 2.0.0 readbacks with exactly one legacy deprecation line. No required step skipped. Raw final log: MAIN `.claude/artifacts/rebrand-qubrics-homebrew14/main-final-ci-20261117.log`.
+
+| #14 acceptance | Measured live proof |
+| --- | --- |
+| Qubrics installs; version matches published CLI | Final main fresh install/test/readback SUCCESS; `@qubrics/cli/2.0.0 darwin-arm64 node-v26.13.0`. Public registry version is 2.0.0. |
+| Sendmux deprecated pointer; existing upgrade succeeds | Actual installed 1.3.1 keg migrated by vendor command, then `brew upgrade sendmux` exited 0 to `qubrics 2.0.0`. Local primary/legacy readbacks both 2.0.0; one legacy deprecation line. Old-name info resolves `qubrics/tap/qubrics`, `oldnames=[sendmux]`. New receipt names canonical tap and approved publication commit. |
+| Tap CI green on canonical name | Final published-main CI43984371201 passed canonical tap/trust/audit/style/install/test/version steps. Original failed signal is clean after removing its metadata-source cause; no rerun or suppressed assertion. |
+| README canonical install line | Independent GitHub contents API readback at published `86a3d9fc` returns README line 10: `brew install qubrics/tap/qubrics`. Rename map API readback returns `{"sendmux":"qubrics"}`. |
+
+✅ Complete — formula live at 2.0.0; 4/4 acceptance criteria proven. PR17 and the CI origin repair are merged. CLI/package version, tarball and SHA256 remain the approved values. No npm publish was performed by this session.
+
+Correctness: Homebrew rename map owns old-name resolution; vendor migration/upgrade replaces the actual old install and writes canonical receipt identity. Existing formula test and CI walked real install/upgrade paths. Tests: no new harness, no assertion change, no removed test. Journeys: fresh install ✓, existing upgrade ✓, old-name lookup ✓, legacy warning ✓, strict online audit ✓.
+
+Rollback after the CI-only follow-up: revert merge `86a3d9fcbe759df3c51fcb535a5ac22c05fac252` first, then rename merge `5b46a0253071d0e864978cda91609b5584db2046`, each with `git revert -m 1` through the reviewed rollback PR. This restores prior source `c9ebc138487f85c590a63edd570a803d82c8968b`. Source rollback does not downgrade migrated users. No manual consumer downgrade is authorised.
+
+Cleanup: task source tarball cache/download already removed and absence verified; no task server/container created; all owned CI watches exited. Sessions, task goal/hold and live ownership were checked before teardown. This final evidence is pushed on the separate evidence branch before removing the clean task tap worktree. #14's closure comment records the subsequent verified teardown; Superset spec workspace and unrelated shared work remain with their live owners. MAIN raw receipts remain cited by open #901/#902.
+
+Parked: existing npm/Homebrew build-from-source warning, outside this rename; no remaining goal blocker. Unrelated PR12 remains untouched.
